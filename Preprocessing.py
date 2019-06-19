@@ -1,17 +1,7 @@
-from collections import namedtuple
-import pandas as pd
+def buildingimport(path,NumRetrofits):
+    import pandas as pd
+    import numpy as np
 
-NumRetrofits=7
-Timesteps=240
-Horizon=range(0,Timesteps)
-FIT=0.12
-Cost_underfloor=100
-Lifetime_underfloor=25
-Embodied_underfloor=5.06
-Embodied_boreholes=28.1
-Lifetime_boreholes=50
-
-def retcosts(path):
     Retrofit_Objectives=pd.read_excel(path,'Sheet1',usecols='A:Q',header=None)
     Rettitles=['Roof_area','Bldg_area','ExistingSystem','Retrofit_cost0','Retrofit_cost1','Retrofit_cost2','Retrofit_cost3','Retrofit_cost4','Retrofit_cost5','Retrofit_cost6','EmbodiedE0','EmbodiedE1','EmbodiedE2','EmbodiedE3','EmbodiedE4','EmbodiedE5','EmbodiedE6']
     Retrofit_Objectives.columns=Rettitles
