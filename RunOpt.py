@@ -1,8 +1,19 @@
-
+from BuildModel import retrofithub
 from collections import namedtuple
 import pandas as pd
 import numpy as np
+from Postprocessing import writer
+from Postprocessing import ReturnSolutions
+from Preprocessing import buildingimport
+from ObjFunctions import costmin
+from ObjFunctions import co2min
+from ObjFunctions import epmin
 
+root_directory=''
+N_buildings=10
+N_pareto=10
+buildingtype=['EFH','MFH','Offices','Hospitals','Restaurants','Schools','Shops']
+bldtype=0 #simulate EFH ()
 NumRetrofits=7
 Timesteps=240
 Horizon=range(0,Timesteps)
@@ -13,6 +24,7 @@ Embodied_underfloor=5.06
 Embodied_boreholes=28.1
 Lifetime_boreholes=50
 
+project_directory=r'/Users/portia_murray/Dropbox/PhD/EnTeR Optimization/Building_Inputs/'
 InputTech = [
     ("HP_ex",0,10,0),#0
     ("Gas_B_ex",0.120,12.5,0.228),#1
@@ -76,3 +88,39 @@ for i in inp:
     AnnuityInput[i]=discount/(1-(1/((1+discount)**TechInp[i].lifetime)))
 AnnuityUnderfloor= discount/(1-(1/((1+discount)**Lifetime_underfloor)))
 
+RetrofitS={}
+SystemS={}
+Costs={}
+Emissions={}
+EpConst={}
+Attributed_buildings=pd.read_csv(r'E:\Portia\Retrofits\MFH\NeighbourAttribution_MF_final.csv')
+
+for b in range(0,N_buildings):
+    RetrofitS[b]=pd.DataFrame(index=range(0,10),columns=['y_no_retrofit','y_roof_retrofit','y_ground_retrofit','y_wall_retrofit','y_win_retrofit','y_winwall_retrofit','y_full_retrofit'])
+    SystemS[b]=pd.DataFrame(index=range(0,10),columns=['Capacity_Heat_Oil_Boiler','Capacity_Heat_Gas_Boiler','Capacity_Heat_Bio_Boiler','Capacity_Heat_ASHP','Capacity_Heat_GSHP','Capacity_MGT','Capacity_Chiller','Capacity_Elec_PV','Capacity_Heat_ST','Storage_cap_Heat','Storage_cap_Cool','Storage_cap_Elec','Heat_Gas_B_ex','Heat_Oil_B_ex','Heat_Bio_B_ex','Heat_DH_ex','Heat_El_ex','Heat_HP_ex','Underfloor'])
+    Costs[b]=pd.DataFrame(index=range(0,10),columns=['Total_cost','Inv_systems','Inv_stor','Inv_ret','FIT_profit','Ops'])
+    Emissions[b]=pd.DataFrame(index=range(0,10),columns=['Total_carbon','EE_systems','EE_stor','EE_ret','EE_underfloor','EE_borehole','Ops'])
+    EpConst[b]=pd.DataFrame(index=range(0,10),columns=['EpConst'])
+    path=root_directory+buildingtype[bldtype]+'/'+buildingtype[bldtype]+'_TDaysLoads_'+str(b)+'.xls'
+    [Roof_area,Bldg_area,ExistingSystem,Retrofit_costs,Retrofit_EE,Loads,PeakLoad,P_solar,Days,Cost_underfloor,Embodied_underfloor]=retcosts(path)
+    mm=retrofithub(Attributed_buildings.loc[b,'Biomass'],Roof_area,Bldg_area,ExistingSystem,Retrofit_costs,Retrofit_EE,Loads,Days,PeakLoad,P_solar,inp,inp2,stor,ret,ex_tech,TechStor,TechInp,AnnuityRet,AnnuityStor,AnnuityInput,AnnuityUnderfloor,FIT,Cost_underfloor,Embodied_underfloor,Lifetime_underfloor,Embodied_boreholes,Lifetime_boreholes)
+    #retrofithub(Biomass_potential,Roof_area,Bldg_area,ExistingSystem,Retrofit_costs,Retrofit_EE,Loads,Days,PeakLoad,P_solar,inp,inp2,stor,ret,ex_tech,TechStor,TechInp,AnnuityRet,AnnuityStor,AnnuityInput,AnnuityUnderfloor,FIT,Cost_underfloor,Embodied_underfloor,Lifetime_underfloor,Embodied_boreholes,Lifetime_boreholes)
+    mc=costmin(mm)
+    assert mc.solve(url=None, key=None), "!!! Solve of the model fails"
+    print 'cost solved'
+    EpConst[b].loc[0,'EpConst']=mc.Total_carbon.solution_value
+    [RetrofitS,SystemS,Costs,Emissions]=ReturnSolutions(b,RetrofitS,SystemS,Costs,Emissions,0,mc)
+    me=co2min(mm)
+    assert me.solve(url=None, key=None), "!!! Solve of the model fails"
+    print 'co2 solved'
+    EpConst[b].loc[9,'EpConst']=me.Total_carbon.solution_value
+    [RetrofitS,SystemS,Costs,Emissions]=ReturnSolutions(b,RetrofitS,SystemS,Costs,Emissions,9,me)
+    for e in range(1,9):
+        EpConst[b].loc[e,'EpConst']=EpConst[b].loc[e-1,'EpConst']-(EpConst[b].loc[0,'EpConst']-EpConst[b].loc[9,'EpConst'])/9
+        mp=epmin(mm,EpConst[b].loc[e,'EpConst'])
+        assert mp.solve(url=None, key=None), "!!! Solve of the model fails"
+        print(e)
+        [RetrofitS,SystemS,Costs,Emissions]=ReturnSolutions(b,RetrofitS,SystemS,Costs,Emissions,e,mp)
+    #name=Attributed_buildings.loc[b,'Building_rank']
+    writepath=root_directory+buildingtype[bldtype]+'/Outputs/'+buildingtype[bldtype]+'_Results_'+str(b)+'.xls'
+    writer(b,writepath,SystemS,RetrofitS,Emissions,Costs)
