@@ -93,7 +93,7 @@ SystemS={}
 Costs={}
 Emissions={}
 EpConst={}
-Attributed_buildings=pd.read_csv(r'E:\Portia\Retrofits\MFH\NeighbourAttribution_MF_final.csv')
+Attributed_buildings=pd.read_csv(project_directory+buildingtype[bldtype]+'/BuildingInformation_'+buildingtype[bldtype]+'_final.csv')
 
 for b in range(0,N_buildings):
     RetrofitS[b]=pd.DataFrame(index=range(0,10),columns=['y_no_retrofit','y_roof_retrofit','y_ground_retrofit','y_wall_retrofit','y_win_retrofit','y_winwall_retrofit','y_full_retrofit'])
@@ -102,7 +102,7 @@ for b in range(0,N_buildings):
     Emissions[b]=pd.DataFrame(index=range(0,10),columns=['Total_carbon','EE_systems','EE_stor','EE_ret','EE_underfloor','EE_borehole','Ops'])
     EpConst[b]=pd.DataFrame(index=range(0,10),columns=['EpConst'])
     path=root_directory+buildingtype[bldtype]+'/'+buildingtype[bldtype]+'_TDaysLoads_'+str(b)+'.xls'
-    [Roof_area,Bldg_area,ExistingSystem,Retrofit_costs,Retrofit_EE,Loads,PeakLoad,P_solar,Days,Cost_underfloor,Embodied_underfloor]=retcosts(path)
+    [Roof_area,Bldg_area,ExistingSystem,Retrofit_costs,Retrofit_EE,Loads,PeakLoad,P_solar,Days,Cost_underfloor,Embodied_underfloor]=buildingimport(path,NumRetrofits)
     mm=retrofithub(Attributed_buildings.loc[b,'Biomass'],Roof_area,Bldg_area,ExistingSystem,Retrofit_costs,Retrofit_EE,Loads,Days,PeakLoad,P_solar,inp,inp2,stor,ret,ex_tech,TechStor,TechInp,AnnuityRet,AnnuityStor,AnnuityInput,AnnuityUnderfloor,FIT,Cost_underfloor,Embodied_underfloor,Lifetime_underfloor,Embodied_boreholes,Lifetime_boreholes)
     #retrofithub(Biomass_potential,Roof_area,Bldg_area,ExistingSystem,Retrofit_costs,Retrofit_EE,Loads,Days,PeakLoad,P_solar,inp,inp2,stor,ret,ex_tech,TechStor,TechInp,AnnuityRet,AnnuityStor,AnnuityInput,AnnuityUnderfloor,FIT,Cost_underfloor,Embodied_underfloor,Lifetime_underfloor,Embodied_boreholes,Lifetime_boreholes)
     mc=costmin(mm)
