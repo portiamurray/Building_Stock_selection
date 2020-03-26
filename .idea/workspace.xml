@@ -4,6 +4,7 @@
     <list default="true" id="03f082fb-ffa0-42b3-a789-7488416f9bb3" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/BuildModel.py" beforeDir="false" afterPath="$PROJECT_DIR$/BuildModel.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ObjFunctions.py" beforeDir="false" afterPath="$PROJECT_DIR$/ObjFunctions.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -39,6 +40,7 @@
     <option name="showLibraryContents" value="true" />
   </component>
   <component name="PropertiesComponent">
+    <property name="ASKED_SHARE_PROJECT_CONFIGURATION_FILES" value="true" />
     <property name="RunOnceActivity.ShowReadmeOnStart" value="true" />
     <property name="SHARE_PROJECT_CONFIGURATION_FILES" value="true" />
     <property name="settings.editor.selected.configurable" value="com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable" />
@@ -67,5 +69,11 @@
       <updated>1560939767287</updated>
     </task>
     <servers />
+  </component>
+  <component name="WindowStateProjectService">
+    <state x="489" y="161" key="SettingsEditor" timestamp="1585238627700">
+      <screen x="0" y="23" width="1680" height="959" />
+    </state>
+    <state x="489" y="161" key="SettingsEditor/0.23.1680.959@0.23.1680.959" timestamp="1585238627700" />
   </component>
 </project>
