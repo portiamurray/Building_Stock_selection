@@ -1,17 +1,22 @@
+#This code optimises for both the retrofit option (no retrofit, roof insulation, facade insulation, window replacement, basement insulation, facade and window replacement, or full retrofit with all components)
+#and the heating system option (oil boiler, gas boiler, biomass boiler, ground source heat pump, air source heat pump) for a given building. Please note that biomass is constrained in terms of kWh/m2/year depending on community availability.
+#Installaion of PV on roofs (max roof area input and constrained), batteries, and thermal storage are also constrained.
+#Please note that this optimisation considers grey/embodied emissions of all conversion technologies, storage technologies, and building retrofit materials
+#This model is written by Portia Murray adapted from the model from Raphael Wu (10.1016/j.apenergy.2016.12.161)
 def retrofithub(Lin_cap_costs,Fixed_cap_costs,Lin_EE,Fixed_EE,CMatrix,STTech,PVTech,GSHPTech,htech,Horizon,Biomass_potential,Roof_area,Bldg_area,ExistingSystem,Retrofit_costs,Retrofit_EE,Loads,Days,PeakLoad,P_solar,inp,inp2,stor,ret,ex_tech,TechStor,TechInp,AnnuityRet,AnnuityStor,AnnuityInput,AnnuityUnderfloor,FIT,Cost_underfloor,Embodied_underfloor,Lifetime_underfloor,Embodied_boreholes,Lifetime_boreholes,gap):
     from docplex.mp.model import Model
     from docplex.util.environment import get_environment
     mdl = Model(name='LCA_retrofithub')
     ##VARIABLE DECLARATION
-    mdl.Pin=mdl.continuous_var_matrix(Horizon,inp,lb=0,name='Pin')
-    mdl.P_export=mdl.continuous_var_matrix(Horizon,stor,lb=0,name='P_export')
-    mdl.y=mdl.binary_var_list(inp2,name='y')
-    mdl.Capacity=mdl.continuous_var_list(inp2,lb=0,name='Capacity')
-    mdl.y_retrofit=mdl.binary_var_list(ret,name='y_retrofit')
-    mdl.y_underfloor=mdl.binary_var(name='y_underfloor')
+    mdl.Pin=mdl.continuous_var_matrix(Horizon,inp,lb=0,name='Pin') #Incoming power for conversion technologies
+    mdl.P_export=mdl.continuous_var_matrix(Horizon,stor,lb=0,name='P_export') #Energy exported out of the building
+    mdl.y=mdl.binary_var_list(inp2,name='y') #Binary value indicating whether or not a technology is installed
+    mdl.Capacity=mdl.continuous_var_list(inp2,lb=0,name='Capacity') #Capacity of conversion technologies (in kW)
+    mdl.y_retrofit=mdl.binary_var_list(ret,name='y_retrofit') #Binary indicating which retrofit option is installed (no retrofit, roof, facade, window, basement, window-facade, full retrofit)
+    mdl.y_underfloor=mdl.binary_var(name='y_underfloor') #Binary indicating the installation of underfloor heating (required for installation of heat pumps in old buildings <1990)
     #Storage
-    mdl.Qin=mdl.continuous_var_matrix(Horizon,stor,lb=0,name='Qin')
-    mdl.Qout=mdl.continuous_var_matrix(Horizon,stor,lb=0,name='Qout')
+    mdl.Qin=mdl.continuous_var_matrix(Horizon,stor,lb=0,name='Qin') #Hourly charging of energy storages
+    mdl.Qout=mdl.continuous_var_matrix(Horizon,stor,lb=0,name='Qout') #Hourly discharging of energy storages
     mdl.E=mdl.continuous_var_matrix(Horizon,stor,lb=0,name='E')
     mdl.Storage_cap=mdl.continuous_var_list(stor,lb=0,name='Storage_cap')
     mdl.y_stor=mdl.binary_var_list(stor,name='y_stor')
